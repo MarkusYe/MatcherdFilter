@@ -57,7 +57,20 @@ CopyCorrelator = Signal_source_time;
 CopyCorrelator_out = xcorr(Signal_Receive_time,CopyCorrelator);
 CopyCorrelator_time_out = (1:length(CopyCorrelator_out))*Delta_T;
 figure;plot(CopyCorrelator_time_out,abs(CopyCorrelator_out));
-
+%% Adaptive correlator
+% LMS algorithm
+mu = 1.6;
+M = 2000;
+LMS_correlator_input = Signal_source_time;%repmat(Signal_source_time,1,length(Signal_Receive_time)/length(Signal_source_time));
+LMS_correlator_desire = Signal_Receive_time(1:length(Signal_Receive_time)/length(Signal_source_time):end);
+LMS_correlator = dsp.LMSFilter(length(Signal_Receive_time),'Method','Normalized LMS','StepSize',mu);
+[LMS_correlator_system,LMS_correlator_error,LMS_correlator_weights] = LMS_correlator(LMS_correlator_input',LMS_correlator_desire');
+figure;plot((1:length(LMS_correlator_system)),LMS_correlator_desire');
+figure;plot((1:length(LMS_correlator_system)),LMS_correlator_system);
+% [LMS_correlator_system,LMS_correlator_error,LMS_correlator_weights] = LMS(LMS_correlator_input',LMS_correlator_desire',mu,M);
+LMS_correlator_out = xcorr(Signal_Receive_time,LMS_correlator_system);
+LMS_correlator_time_out = (1:length(LMS_correlator_out))*Delta_T;
+figure;plot(LMS_correlator_time_out,abs(LMS_correlator_out));
 
 
 
